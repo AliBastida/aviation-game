@@ -11,6 +11,7 @@
         .wrong { background-color: lightcoral; }
         .selected { background-color: yellow; }
         .feedback { margin-top: 20px; font-size: 18px; font-weight: bold; }
+        .full-screen-wrong { background-color: lightcoral !important; transition: background-color 0.5s ease; }
     </style>
 </head>
 <body>
@@ -91,6 +92,7 @@
             selectedDefinition = null;
             correctPairs.clear();
             document.getElementById("feedback").textContent = "";
+            document.body.classList.remove("full-screen-wrong");
             createElements();
         }
         
@@ -127,15 +129,10 @@
                 feedback.textContent = "Correct! Keep going!";
                 feedback.style.color = "green";
             } else {
-                selectedWord.classList.add("wrong");
-                selectedDefinition.classList.add("wrong");
-                feedback.textContent = "Incorrect! Try again.";
+                document.body.classList.add("full-screen-wrong");
+                feedback.textContent = "Incorrect! Restarting...";
                 feedback.style.color = "red";
-                setTimeout(() => {
-                    if (selectedWord) selectedWord.classList.remove("wrong", "selected");
-                    if (selectedDefinition) selectedDefinition.classList.remove("wrong", "selected");
-                    feedback.textContent = "";
-                }, 1000);
+                setTimeout(resetGame, 1000);
             }
             selectedWord = null;
             selectedDefinition = null;
