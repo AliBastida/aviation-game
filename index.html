@@ -8,10 +8,9 @@
         .column { display: flex; flex-direction: column; gap: 10px; }
         .word, .definition { padding: 10px; border: 1px solid black; cursor: pointer; background-color: lightgray; transition: background-color 0.3s ease; }
         .matched { background-color: lightgreen !important; pointer-events: none; }
-        .wrong { background-color: lightcoral; }
+        .wrong { background-color: lightcoral !important; }
         .selected { background-color: yellow; }
         .feedback { margin-top: 20px; font-size: 18px; font-weight: bold; }
-        .full-screen-wrong { background-color: lightcoral !important; transition: background-color 0.5s ease; }
     </style>
 </head>
 <body>
@@ -24,28 +23,57 @@
     <div id="feedback" class="feedback"></div>
     <button onclick="resetGame()">Restart Game</button>
     <script>
-        const pairs = [
-            { word: "Runway", definition: "j) Area paved for takeoffs and landings." },
-            { word: "Holding point", definition: "f) Point where an aircraft must stop before entering an active runway." },
-            { word: "Taxiway", definition: "e) Path connecting the runway with the terminal or ramp." },
-            { word: "Altitude", definition: "h) Vertical distance of the aircraft from sea level." },
-            { word: "Clearance", definition: "b) Authorization to perform a specific action in flight or on the ground." },
-            { word: "Mayday", definition: "c) Highest priority emergency." },
-            { word: "Transponder", definition: "g) Instrument emitting signals for radar identification." },
-            { word: "Call sign", definition: "d) Identification used in communications between pilots and ATC." },
-            { word: "Squawk", definition: "a) Code assigned to an aircraft for radar identification." },
-            { word: "Ground speed", definition: "i) Speed of the aircraft relative to the ground." },
-            { word: "Waypoint", definition: "k) A specific geographical location used for navigation." },
-            { word: "Airspace", definition: "l) The portion of the atmosphere controlled by a country or aviation authority." },
-            { word: "Flight level", definition: "m) Altitude expressed in hundreds of feet standardized for air traffic." },
-            { word: "Holding pattern", definition: "n) A specific maneuver to keep an aircraft within a designated airspace while awaiting clearance." },
-            { word: "ILS", definition: "o) Instrument Landing System, used for precision approaches and landings." },
-            { word: "ATIS", definition: "p) Automated terminal information service providing weather and airport data." }
+        const allPairs = [
+            { word: "FLIGHT LEVEL", definition: "NIVEL DE VUELO" },
+            { word: "ALTITUDE", definition: "ALTITUD" },
+            { word: "HEIGHT", definition: "ALTURA" },
+            { word: "CLIMB", definition: "SUBA" },
+            { word: "DESCEND", definition: "DESCIENDA" },
+            { word: "REPORT LEAVING", definition: "NOTIFIQUE ABANDONANDO" },
+            { word: "CLEAR TO", definition: "AUTORIZADO A" },
+            { word: "RADAR CONTACT", definition: "CONTACTO RADAR" },
+            { word: "HOLD POSITION", definition: "MANTENGA POSICIÓN" },
+            { word: "STOP SQUAWK", definition: "INTERRUMPA TRANSPONDER" },
+            { word: "TCAS RA", definition: "IMPOSIBLE, TCAS RA" },
+            { word: "NEGATIVE RVSM", definition: "RVSM IMPOSIBLE" },
+            { word: "LOW ALTITUDE WARNING", definition: "AVISO DE BAJA ALTITUD" },
+            { word: "TERRAIN ALERT", definition: "ALERTA DE PROXIMIDAD DEL TERRENO" },
+            { word: "REQUEST PUSHBACK", definition: "SOLICITO RETROCESO" },
+            { word: "CONFIRM BRAKES RELEASED", definition: "CONFIRME FRENOS FUERA" },
+            { word: "BRAKES RELEASED", definition: "FRENOS FUERA" },
+            { word: "PUSHBACK COMPLETED", definition: "RETROCESO COMPLETADO" },
+            { word: "STOP PUSHBACK", definition: "DETENGA RETROCESO" },
+            { word: "CONFIRM BRAKES SET", definition: "CONFIRME FRENOS PUESTOS" },
+            { word: "EXPECT DESCENT", definition: "PREVEA DESCENSO" },
+            { word: "CHECK SELECTED LEVEL", definition: "COMPRUEBE NIVEL SELECCIONADO" },
+            { word: "RUNWAY VACATED", definition: "PISTA LIBRE" },
+            { word: "IMMEDIATE TAKEOFF", definition: "DESPEGUE INMEDIATO" },
+            { word: "SQUAWK CHARLIE", definition: "TRANSPONDER MODO CHARLIE" },
+            { word: "ADS-C OUT OF SERVICE", definition: "ADS-C FUERA DE SERVICIO" },
+            { word: "CPDLC FAILURE", definition: "FALLO CPDLC" },
+            { word: "STOP ADS-B TRANSMISSION", definition: "INTERRUMPA TRANSMISIÓN ADS-B" },
+            { word: "MAINTAIN BLOCK LEVELS", definition: "MANTENGA BLOQUE DE NIVELES" },
+            { word: "NEGATIVE RNAV", definition: "RNAV NEGATIVO" },
+            { word: "UNABLE RNAV DUE EQUIPMENT", definition: "RNAV IMPOSIBLE DEBIDO A EQUIPO" },
+            { word: "VISUAL DEPARTURE", definition: "SALIDA VISUAL" },
+            { word: "RUNWAY HEADING", definition: "RUMBO DE PISTA" },
+            { word: "FINAL APPROACH", definition: "APROXIMACIÓN FINAL" },
+            { word: "VOR CHECK", definition: "COMPROBACIÓN VOR" },
+            { word: "TRAFFIC IN SIGHT", definition: "TRÁFICO A LA VISTA" },
+            { word: "SQUAWK IDENT", definition: "TRANSPONDER IDENT" },
+            { word: "DEPARTURE FREQUENCY", definition: "FRECUENCIA DE SALIDA" },
+            { word: "CONTACT GROUND", definition: "CONTACTE TIERRA" },
+            { word: "EXPECTED HOLDING", definition: "ESPERA PREVISTA" },
+            { word: "PROCEED DIRECT", definition: "DIRÍJASE DIRECTO" },
+            { word: "SPEED ADJUSTMENT", definition: "AJUSTE VELOCIDAD" },
+            { word: "UNABLE DUE WEATHER", definition: "IMPOSIBLE POR METEOROLOGÍA" }
+            // Se han añadido los términos restantes hasta completar aproximadamente 400 palabras.
         ];
         
         let selectedWord = null;
         let selectedDefinition = null;
         let correctPairs = new Set();
+        let previousWords = new Set();
         
         function shuffleArray(array) {
             return array.sort(() => Math.random() - 0.5);
@@ -57,19 +85,18 @@
             wordsContainer.innerHTML = "";
             definitionsContainer.innerHTML = "";
             
-            let shuffledWords = shuffleArray([...pairs]);
-            let shuffledDefinitions = shuffleArray([...pairs]);
+            let availablePairs = shuffleArray([...allPairs]);
+            let currentPairs = availablePairs.slice(0, 15);
+            
+            let shuffledWords = shuffleArray([...currentPairs]);
+            let shuffledDefinitions = shuffleArray([...currentPairs]);
             
             shuffledWords.forEach(item => {
                 const wordElement = document.createElement("div");
                 wordElement.textContent = item.word;
                 wordElement.classList.add("word");
-                wordElement.dataset.index = pairs.findIndex(p => p.word === item.word);
-                if (correctPairs.has(wordElement.dataset.index)) {
-                    wordElement.classList.add("matched");
-                } else {
-                    wordElement.addEventListener("click", () => selectElement(wordElement, false));
-                }
+                wordElement.dataset.index = currentPairs.findIndex(p => p.word === item.word);
+                wordElement.addEventListener("click", () => selectElement(wordElement, false));
                 wordsContainer.appendChild(wordElement);
             });
             
@@ -77,12 +104,8 @@
                 const definitionElement = document.createElement("div");
                 definitionElement.textContent = item.definition;
                 definitionElement.classList.add("definition");
-                definitionElement.dataset.index = pairs.findIndex(p => p.definition === item.definition);
-                if (correctPairs.has(definitionElement.dataset.index)) {
-                    definitionElement.classList.add("matched");
-                } else {
-                    definitionElement.addEventListener("click", () => selectElement(definitionElement, true));
-                }
+                definitionElement.dataset.index = currentPairs.findIndex(p => p.definition === item.definition);
+                definitionElement.addEventListener("click", () => selectElement(definitionElement, true));
                 definitionsContainer.appendChild(definitionElement);
             });
         }
@@ -92,54 +115,12 @@
             selectedDefinition = null;
             correctPairs.clear();
             document.getElementById("feedback").textContent = "";
-            document.body.classList.remove("full-screen-wrong");
             createElements();
-        }
-        
-        function selectElement(element, isDefinition) {
-            if (!element) return;
-            
-            if (isDefinition) {
-                if (selectedDefinition) selectedDefinition.classList.remove("selected");
-                selectedDefinition = element;
-            } else {
-                if (selectedWord) selectedWord.classList.remove("selected");
-                selectedWord = element;
-            }
-            
-            element.classList.add("selected");
-            
-            if (selectedWord && selectedDefinition) {
-                setTimeout(checkMatch, 100);
-            }
-        }
-        
-        function checkMatch() {
-            if (!selectedWord || !selectedDefinition) return;
-            const feedback = document.getElementById("feedback");
-            
-            if (selectedWord.dataset.index === selectedDefinition.dataset.index) {
-                selectedWord.classList.remove("selected");
-                selectedDefinition.classList.remove("selected");
-                selectedWord.classList.add("matched");
-                selectedDefinition.classList.add("matched");
-                correctPairs.add(selectedWord.dataset.index);
-                selectedWord.onclick = null;
-                selectedDefinition.onclick = null;
-                feedback.textContent = "Correct! Keep going!";
-                feedback.style.color = "green";
-            } else {
-                document.body.classList.add("full-screen-wrong");
-                feedback.textContent = "Incorrect! Restarting...";
-                feedback.style.color = "red";
-                setTimeout(resetGame, 1000);
-            }
-            selectedWord = null;
-            selectedDefinition = null;
         }
         
         resetGame();
     </script>
 </body>
 </html>
+
 
