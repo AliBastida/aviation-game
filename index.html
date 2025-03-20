@@ -43,37 +43,11 @@
             { word: "BRAKES RELEASED", definition: "FRENOS FUERA" },
             { word: "PUSHBACK COMPLETED", definition: "RETROCESO COMPLETADO" },
             { word: "STOP PUSHBACK", definition: "DETENGA RETROCESO" },
-            { word: "CONFIRM BRAKES SET", definition: "CONFIRME FRENOS PUESTOS" },
-            { word: "EXPECT DESCENT", definition: "PREVEA DESCENSO" },
-            { word: "CHECK SELECTED LEVEL", definition: "COMPRUEBE NIVEL SELECCIONADO" },
-            { word: "RUNWAY VACATED", definition: "PISTA LIBRE" },
-            { word: "IMMEDIATE TAKEOFF", definition: "DESPEGUE INMEDIATO" },
-            { word: "SQUAWK CHARLIE", definition: "TRANSPONDER MODO CHARLIE" },
-            { word: "ADS-C OUT OF SERVICE", definition: "ADS-C FUERA DE SERVICIO" },
-            { word: "CPDLC FAILURE", definition: "FALLO CPDLC" },
-            { word: "STOP ADS-B TRANSMISSION", definition: "INTERRUMPA TRANSMISIÓN ADS-B" },
-            { word: "MAINTAIN BLOCK LEVELS", definition: "MANTENGA BLOQUE DE NIVELES" },
-            { word: "NEGATIVE RNAV", definition: "RNAV NEGATIVO" },
-            { word: "UNABLE RNAV DUE EQUIPMENT", definition: "RNAV IMPOSIBLE DEBIDO A EQUIPO" },
-            { word: "VISUAL DEPARTURE", definition: "SALIDA VISUAL" },
-            { word: "RUNWAY HEADING", definition: "RUMBO DE PISTA" },
-            { word: "FINAL APPROACH", definition: "APROXIMACIÓN FINAL" },
-            { word: "VOR CHECK", definition: "COMPROBACIÓN VOR" },
-            { word: "TRAFFIC IN SIGHT", definition: "TRÁFICO A LA VISTA" },
-            { word: "SQUAWK IDENT", definition: "TRANSPONDER IDENT" },
-            { word: "DEPARTURE FREQUENCY", definition: "FRECUENCIA DE SALIDA" },
-            { word: "CONTACT GROUND", definition: "CONTACTE TIERRA" },
-            { word: "EXPECTED HOLDING", definition: "ESPERA PREVISTA" },
-            { word: "PROCEED DIRECT", definition: "DIRÍJASE DIRECTO" },
-            { word: "SPEED ADJUSTMENT", definition: "AJUSTE VELOCIDAD" },
-            { word: "UNABLE DUE WEATHER", definition: "IMPOSIBLE POR METEOROLOGÍA" }
-            // Se han añadido los términos restantes hasta completar aproximadamente 400 palabras.
+            { word: "CONFIRM BRAKES SET", definition: "CONFIRME FRENOS PUESTOS" }
         ];
         
         let selectedWord = null;
         let selectedDefinition = null;
-        let correctPairs = new Set();
-        let previousWords = new Set();
         
         function shuffleArray(array) {
             return array.sort(() => Math.random() - 0.5);
@@ -85,9 +59,7 @@
             wordsContainer.innerHTML = "";
             definitionsContainer.innerHTML = "";
             
-            let availablePairs = shuffleArray([...allPairs]);
-            let currentPairs = availablePairs.slice(0, 15);
-            
+            let currentPairs = shuffleArray(allPairs).slice(0, 15);
             let shuffledWords = shuffleArray([...currentPairs]);
             let shuffledDefinitions = shuffleArray([...currentPairs]);
             
@@ -110,11 +82,46 @@
             });
         }
         
+        function selectElement(element, isDefinition) {
+            if (!element) return;
+            
+            element.classList.add("selected");
+            
+            if (isDefinition) {
+                selectedDefinition = element;
+            } else {
+                selectedWord = element;
+            }
+            
+            if (selectedWord && selectedDefinition) {
+                setTimeout(checkMatch, 500);
+            }
+        }
+        
+        function checkMatch() {
+            if (!selectedWord || !selectedDefinition) return;
+            
+            if (selectedWord.dataset.index === selectedDefinition.dataset.index) {
+                selectedWord.classList.remove("selected");
+                selectedDefinition.classList.remove("selected");
+                selectedWord.classList.add("matched");
+                selectedDefinition.classList.add("matched");
+            } else {
+                selectedWord.classList.add("wrong");
+                selectedDefinition.classList.add("wrong");
+                setTimeout(resetGame, 1000);
+            }
+            
+            selectedWord = null;
+            selectedDefinition = null;
+        }
+        
         function resetGame() {
             selectedWord = null;
             selectedDefinition = null;
-            correctPairs.clear();
-            document.getElementById("feedback").textContent = "";
+            document.querySelectorAll(".word, .definition").forEach(el => {
+                el.classList.remove("matched", "wrong", "selected");
+            });
             createElements();
         }
         
@@ -122,5 +129,4 @@
     </script>
 </body>
 </html>
-
 
